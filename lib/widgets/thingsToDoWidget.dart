@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:initial_task/bloc/favourite_things_to_do/favourite_things_to_do_bloc.dart';
+import 'package:initial_task/bloc/favourite_things_to_do/favourite_things_to_do_event.dart';
 import 'package:initial_task/provider/favourite_provider.dart';
 
 Stack thingsToDoWidget({
@@ -10,10 +13,15 @@ Stack thingsToDoWidget({
   required String description,
   required WidgetRef ref,
   required int index,
+  required BuildContext context,
 }) {
   bool isFavourite;
-  List favouriteList =
-      ref.watch(favouriteProvider).favouriteIndexListOfThingsToDo;
+  List favouriteList = context
+      .watch<FavouriteThingsToDoBloc>()
+      .state
+      .favouriteThingsToDoList;
+
+  // ref.watch(favouriteProvider).favouriteIndexListOfThingsToDo;
 
   if (favouriteList.contains(index)) {
     isFavourite = true;
@@ -68,7 +76,14 @@ Stack thingsToDoWidget({
 
         child: InkWell(
           onTap: () {
-            ref.read(favouriteProvider).addToFavouriteThingsToDo(index);
+            isFavourite
+                ? context.read<FavouriteThingsToDoBloc>().add(
+                    RemoveFromFavouriteThingsToDo(index: index),
+                  )
+                : context.read<FavouriteThingsToDoBloc>().add(
+                    AddToFavouriteThingsToDo(index: index),
+                  );
+            // ref.read(favouriteProvider).addToFavouriteThingsToDo(index);
           },
           child: Container(
             height: 50,

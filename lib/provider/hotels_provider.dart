@@ -12,7 +12,6 @@ class HotelsProvider extends ChangeNotifier {
         hotelsDataList
             .map((elements) => HotelsModel.fromJson(elements))
             .toList();
-    debugPrint("The data in List is $hotelsList");
     notifyListeners();
   }
 }

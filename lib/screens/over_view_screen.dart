@@ -1,9 +1,23 @@
+import 'dart:developer';
+
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:initial_task/bloc/dots_indicator/dots_indicator_bloc.dart';
+import 'package:initial_task/bloc/dots_indicator/dots_indicator_event.dart';
+import 'package:initial_task/bloc/hotels/hotels_bloc.dart';
+import 'package:initial_task/bloc/hotels/hotels_event.dart';
+import 'package:initial_task/bloc/hotels/hotels_state.dart';
+import 'package:initial_task/bloc/tabbar/tabbar_bloc.dart';
+import 'package:initial_task/bloc/tabbar/tabbar_event.dart';
+import 'package:initial_task/bloc/things_to_do/things_to_do_bloc.dart';
+import 'package:initial_task/bloc/things_to_do/things_to_do_event.dart';
+import 'package:initial_task/bloc/things_to_do/things_to_do_state.dart';
 import 'package:initial_task/provider/dots_indicator_provider.dart';
 import 'package:initial_task/provider/hotels_provider.dart';
 import 'package:initial_task/provider/things_to_do_provider.dart';
+import 'package:initial_task/screens/home_screen.dart';
 import 'package:initial_task/screens/hotels_screen.dart';
 import 'package:initial_task/screens/restaurant_screens.dart';
 import 'package:initial_task/screens/things_to_do_screens.dart';
@@ -27,7 +41,10 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    context.read<TabbarBloc>().add(ChangeTabIndex(index: 0));
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HotelsBloc>().add(LoadHotelsData());
+      context.read<ThingsToDoBloc>().add(LoadThingsToDo());
       ref.read(hotelsProvider).loadHotelsData();
       ref.read(thingsTODoProvider).loadThingsToDoList();
     });
@@ -50,10 +67,10 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final listofHotelsDataFromProvider = ref.watch(hotelsProvider).hotelsList;
-    final listofThingsTodoDataFromProvider = ref
-        .watch(thingsTODoProvider)
-        .thingsToDoList;
+    // final listofHotelsDataFromProvider = ref.watch(hotelsProvider).hotelsList;
+    // final listofThingsTodoDataFromProvider = ref
+    //     .watch(thingsTODoProvider)
+    //     .thingsToDoList;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SingleChildScrollView(
@@ -65,7 +82,10 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                 controller: _pageController,
                 itemCount: listOfOverViewImages.length,
                 onPageChanged: (index) {
-                  ref.read(dotsIndicatorProvider.notifier).changeIndex(index);
+                  context.read<DotsIndicatorBloc>().add(
+                    ChangeIndex(index: index),
+                  );
+                  // ref.read(dotsIndicatorProvider.notifier).changeIndex(index);
                 },
                 itemBuilder: (context, index) {
                   final imageToShow = listOfOverViewImages[index];
@@ -73,7 +93,7 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 400,
                           width: 350,
                           child: Image(
@@ -89,7 +109,11 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
             ),
             DotsIndicator(
               dotsCount: listOfOverViewImages.length,
-              position: ref.watch(dotsIndicatorProvider).newIndex.toDouble(),
+              position: context
+                  .watch<DotsIndicatorBloc>()
+                  .state
+                  .index
+                  .toDouble(),
             ),
 
             Padding(
@@ -124,8 +148,11 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => HotelsScreen(),
+                                builder: (context) => HomeScreen(index: 1),
                               ),
+                            );
+                            context.read<TabbarBloc>().add(
+                              ChangeTabIndex(index: 1),
                             );
                           },
                           context: context,
@@ -138,8 +165,11 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ThingsToDoScreens(),
+                                builder: (context) => HomeScreen(index: 3),
                               ),
+                            );
+                            context.read<TabbarBloc>().add(
+                              ChangeTabIndex(index: 3),
                             );
                           },
                           context: context,
@@ -154,8 +184,11 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RestaurantScreens(),
+                                builder: (context) => HomeScreen(index: 2),
                               ),
+                            );
+                            context.read<TabbarBloc>().add(
+                              ChangeTabIndex(index: 2),
                             );
                           },
                           context: context,
@@ -184,24 +217,37 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                         ),
                         SizedBox(
                           height: 350,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: listofHotelsDataFromProvider.length,
-                            itemBuilder: (context, index) {
-                              final hotelsDataToShow =
-                                  listofHotelsDataFromProvider[index];
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: hotelsDataShowingWidgets(
-                                  hotelName: hotelsDataToShow.hotelName,
-                                  imageUrl: hotelsDataToShow.imageUrl,
-                                  ratings: hotelsDataToShow.ratings,
-                                  raters: hotelsDataToShow.raters,
-                                  description: hotelsDataToShow.description,
-                                  ref: ref,
-                                  index: index,
-                                ),
-                              );
+
+                          child: BlocBuilder<HotelsBloc, HotelsState>(
+                            builder: (context, state) {
+                              if (state is HotelsInitialState) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              } else {
+                                return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: state.hotelsDataList.length,
+                                  itemBuilder: (context, index) {
+                                    final hotelsDataToShow =
+                                        state.hotelsDataList[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: hotelsDataShowingWidgets(
+                                        hotelName: hotelsDataToShow.hotelName,
+                                        imageUrl: hotelsDataToShow.imageUrl,
+                                        ratings: hotelsDataToShow.ratings,
+                                        raters: hotelsDataToShow.raters,
+                                        description:
+                                            hotelsDataToShow.description,
+                                        ref: ref,
+                                        index: index,
+                                        context: context,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
                             },
                           ),
                         ),
@@ -213,24 +259,36 @@ class _OverViewScreenState extends ConsumerState<OverViewScreen> {
                         ),
                         SizedBox(
                           height: 400,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: listofThingsTodoDataFromProvider.length,
-                            itemBuilder: (context, index) {
-                              final thingsTODodataToShow =
-                                  listofThingsTodoDataFromProvider[index];
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: thingsToDoWidget(
-                                  hotelName: thingsTODodataToShow.name,
-                                  imageUrl: thingsTODodataToShow.imageUrl,
-                                  ratings: thingsTODodataToShow.ratings,
-                                  raters: thingsTODodataToShow.raters,
-                                  description: thingsTODodataToShow.description,
-                                  ref: ref,
-                                  index: index,
-                                ),
-                              );
+                          child: BlocBuilder<ThingsToDoBloc, ThingsToDoState>(
+                            builder: (context, state) {
+                              if (state is ThingsToDoInitialState) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              } else {
+                                return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: state.thingsToDoDataList.length,
+                                  itemBuilder: (context, index) {
+                                    final thingsTODodataToShow =
+                                        state.thingsToDoDataList[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: thingsToDoWidget(
+                                        hotelName: thingsTODodataToShow.name,
+                                        imageUrl: thingsTODodataToShow.imageUrl,
+                                        ratings: thingsTODodataToShow.ratings,
+                                        raters: thingsTODodataToShow.raters,
+                                        description:
+                                            thingsTODodataToShow.description,
+                                        ref: ref,
+                                        index: index,
+                                        context: context,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
                             },
                           ),
                         ),

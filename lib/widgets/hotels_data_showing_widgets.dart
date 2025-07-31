@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:initial_task/bloc/favourite_hotels/favourite_hotels_bloc.dart';
+import 'package:initial_task/bloc/favourite_hotels/favourite_hotels_event.dart';
 import 'package:initial_task/provider/favourite_provider.dart';
 
 Stack hotelsDataShowingWidgets({
@@ -10,9 +13,13 @@ Stack hotelsDataShowingWidgets({
   required String description,
   required WidgetRef ref,
   required int index,
+  required BuildContext context,
 }) {
   bool isFavourite;
-  List favouriteList = ref.watch(favouriteProvider).favouriteIndexListOfHotel;
+  List favouriteList = context
+      .watch<FavouriteHotelsBloc>()
+      .state
+      .favouriteHotelsList;
 
   if (favouriteList.contains(index)) {
     isFavourite = true;
@@ -67,7 +74,13 @@ Stack hotelsDataShowingWidgets({
 
         child: InkWell(
           onTap: () {
-            ref.read(favouriteProvider).addToFavouriteHotels(index);
+            isFavourite
+                ? context.read<FavouriteHotelsBloc>().add(
+                    RemoveFromFavouriteHotelsList(index: index),
+                  )
+                : context.read<FavouriteHotelsBloc>().add(
+                    AddToFavouriteHotelsList(index: index),
+                  );
           },
           child: Container(
             height: 50,

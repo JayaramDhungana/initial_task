@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:initial_task/bloc/tabbar/tabbar_bloc.dart';
+import 'package:initial_task/bloc/tabbar/tabbar_event.dart';
+import 'package:initial_task/bloc/tabbar/tabbar_state.dart';
 import 'package:initial_task/provider/change_index_provider.dart';
+import 'package:initial_task/screens/forum_screen.dart';
 import 'package:initial_task/screens/hotels_screen.dart';
 import 'package:initial_task/screens/over_view_screen.dart';
 import 'package:initial_task/screens/restaurant_screens.dart';
@@ -8,7 +13,8 @@ import 'package:initial_task/screens/things_to_do_screens.dart';
 import 'package:initial_task/widgets/tab_bar_options_widgets.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  final int index;
+  const HomeScreen({required this.index, super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -20,25 +26,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-
+    _tabController = TabController(
+      length: 5,
+      vsync: this,
+      initialIndex: widget.index,
+    );
     _tabController.addListener(() {});
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _tabController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final indexFromProvider = ref.watch(changeIndexProvider).index;
-    final selectedIndex = indexFromProvider;
-
+    final selectedIndex = context.watch<TabbarBloc>().state.index;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -61,8 +66,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ],
         bottom: TabBar(
           onTap: (value) {
-            ref.read(changeIndexProvider).changeIndex(value);
+            context.read<TabbarBloc>().add(ChangeTabIndex(index: value));
           },
+
           controller: _tabController,
           dividerColor: Colors.transparent,
 
@@ -106,6 +112,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 isSelected: selectedIndex == 3,
               ),
             ),
+            Tab(
+              child: tabBarOptionsWidgets(
+                color: Colors.green,
+                icon: Icon(Icons.forum),
+                text: "Forum",
+                isSelected: selectedIndex == 4,
+              ),
+            ),
           ],
         ),
       ),
@@ -116,6 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           HotelsScreen(),
           RestaurantScreens(),
           ThingsToDoScreens(),
+          ForumScreen(),
         ],
       ),
     );
