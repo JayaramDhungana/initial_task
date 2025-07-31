@@ -51,7 +51,7 @@ class MyShape extends CustomPainter {
       size.width * 0.1,
       size.height * 0.78,
       size.width * 0.3,
-      size.height * 0.89,
+      size.height * 0.89, 
     );
     path.quadraticBezierTo(
       size.width * 0.45,

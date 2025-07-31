@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:initial_task/bloc/forum/forum_bloc.dart';
 import 'package:initial_task/bloc/forum/forum_state.dart';
+import 'package:initial_task/clipper/clipper_design3.dart';
 import 'package:initial_task/custom_painter/custom_design_forum.dart';
 import 'package:initial_task/custom_painter/custom_painter_design1.dart';
 import 'package:initial_task/custom_painter/shape_maker_design.dart';
@@ -33,7 +34,7 @@ class _ForumScreenState extends State<ForumScreen> {
       body: Column(
         children: [
           SizedBox(
-            child: ShapeMakerDesign()
+            child: ClipperDesign3()
           ),
           Expanded(           
              child: BlocBuilder<ForumBloc, ForumState>(

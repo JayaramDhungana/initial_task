@@ -10,6 +10,9 @@ import 'package:initial_task/bloc/hotels/hotels_bloc.dart';
 import 'package:initial_task/bloc/restaurant/restaurant_bloc.dart';
 import 'package:initial_task/bloc/tabbar/tabbar_bloc.dart';
 import 'package:initial_task/bloc/things_to_do/things_to_do_bloc.dart';
+import 'package:initial_task/clipper/clipper_design1.dart';
+import 'package:initial_task/clipper/clipper_design2.dart';
+import 'package:initial_task/clipper/clipper_design3.dart';
 import 'package:initial_task/clipper/clipper_learn.dart';
 import 'package:initial_task/custom_painter/custom_design_forum.dart';
 import 'package:initial_task/custom_painter/custom_painter_design.dart';
@@ -73,6 +76,9 @@ class MyApp extends StatelessWidget {
         // CustomePainterLearn()
         HomeScreen(index: 0),
         // ShapeMakerDesign(),
+        // ClipperDesign1()
+        // ClipperDesign2()
+        // ClipperDesign3()
         
       ),
     );
